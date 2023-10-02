@@ -13,9 +13,13 @@ const userSchema = new mongoose.Schema({
   },
   password:{
     type: String,
-    required: [true, "Please enter your password"],
+    // required: [false, "Please enter your password"],
     minLength: [4, "Password should be greater than 4 characters"],
     select: false,
+  },
+  googleId: {
+    type: String,
+    // required:false
   },
   phoneNumber:{
     type: Number,

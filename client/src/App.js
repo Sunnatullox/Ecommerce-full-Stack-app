@@ -60,18 +60,17 @@ import SellerProtectedRoute from "./routes/SellerProtectedRoute";
 import { getAllProducts } from "./redux/actions/product";
 import { getAllEvents } from "./redux/actions/event";
 import axios from "axios";
-import { server } from "./server";
+import { server, serverUrl } from "./server";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import NotFound from "./components/Layout/NotFound";
 import socketIO from "socket.io-client";
 import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
 import { addNewNotifMessage } from "./redux/actions/socket";
 
 
-const ENDPOINT = "http://localhost:5500";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+;
+const socketId = socketIO(serverUrl, { transports: ["websocket"] });
 
 
 const App = () => {
@@ -101,11 +100,8 @@ const App = () => {
     window.scroll(0,0)
   }, []);
 
-
-
   useEffect(() => {
     socketId.on("newMessage", (data) => {
-      console.log(data)
       Store.dispatch(addNewNotifMessage({
         sender: data.sender,
         text: data.text ? data.text : null,
@@ -115,7 +111,6 @@ const App = () => {
       }));
     });
   });
-
 
   async function getStripeApikey() {
     const { data } = await axios.get(`${server}/payment/stripeapikey`);

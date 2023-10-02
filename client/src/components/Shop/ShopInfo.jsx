@@ -32,7 +32,7 @@ const ShopInfo = ({ isOwner }) => {
   }, [dispatch, id]);
 
   const logoutHandler = async () => {
-    axios.get(`${server}/seller/logout`, {
+   await axios.get(`${server}/seller/logout`, {
       withCredentials: true,
     });
     window.location.reload();
@@ -104,7 +104,7 @@ const ShopInfo = ({ isOwner }) => {
               </Link>
               <div
                 className={`${styles.button} !w-full !h-[42px] !rounded-[5px]`}
-                onClick={logoutHandler}
+                onClick={() => logoutHandler()}
               >
                 <span className="text-white">Log Out</span>
               </div>

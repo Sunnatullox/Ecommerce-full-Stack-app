@@ -9,12 +9,11 @@ const Events = () => {
   return (
     <div>
      {
-      !isLoading && (
+      (!isLoading && allEvents?.length > 0 ) && (
         <div className={`${styles.section}`}>
       <div className={`${styles.heading}`}>
         <h1>Popular Events</h1>
       </div>
-
       <div className="w-full grid">
          {
           allEvents?.length > 0 && (

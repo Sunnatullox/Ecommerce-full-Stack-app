@@ -11,6 +11,7 @@ const fileUpload = require("express-fileupload");
 const socketIO = require("socket.io");
 const http = require("http");
 const server = http.createServer(app);
+
 const io = socketIO(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -31,33 +32,33 @@ app.use(
     origin: [process.env.CLIENT_URL],
     credentials: true,
   })
-);
+  );
 
-app.use(fileUpload());
-app.use(morgan("dev"));
-app.use(compression());
-app.use(express.json());
-app.use(cookieParser());
-
-app.use("/test", (req, res) => {
-  res.send("Hello world!");
-});
-
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// import routes
-const userRoute = require("./routes/userRoute");
-const shopRoute = require("./routes/shopRoute");
-const productRoute = require("./routes/productRoute");
-const eventRoute = require("./routes/eventRoute");
-const coupoun = require("./routes/couponCodeRoute");
-const order = require("./routes/orderRoute");
-const messages = require("./routes/messagesRoute");
-const conversation = require("./routes/conversationRoute");
-const payment = require("./routes/paymentRoute");
-const withdraw = require("./routes/withdrawRoute");
-const { getImageUrl } = require("./utils/firebase");
-
+  app.use(fileUpload());
+  app.use(morgan("dev"));
+  app.use(compression());
+  app.use(express.json());
+  app.use(cookieParser());
+  
+  app.use("/test", (req, res) => {
+    res.send("Hello world!");
+  });
+  
+  app.use(bodyParser.urlencoded({ extended: true }));
+  
+  // import routes
+  const userRoute = require("./routes/userRoute");
+  const shopRoute = require("./routes/shopRoute");
+  const productRoute = require("./routes/productRoute");
+  const eventRoute = require("./routes/eventRoute");
+  const coupoun = require("./routes/couponCodeRoute");
+  const order = require("./routes/orderRoute");
+  const messages = require("./routes/messagesRoute");
+  const conversation = require("./routes/conversationRoute");
+  const payment = require("./routes/paymentRoute");
+  const withdraw = require("./routes/withdrawRoute");
+  const { getImageUrl } = require("./utils/firebase");
+  
 app.use("/api/user", userRoute);
 app.use("/api/seller", shopRoute);
 app.use("/api/product", productRoute);

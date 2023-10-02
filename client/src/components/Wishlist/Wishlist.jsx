@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { RxCross1 } from "react-icons/rx";
-import { BsCartPlus } from "react-icons/bs";
+import { BsCartPlus, BsTrash } from "react-icons/bs";
 import styles from "../../styles/styles";
 import { AiOutlineHeart } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
@@ -74,27 +74,30 @@ const CartSingle = ({ data,removeFromWishlistHandler,addToCartHandler }) => {
   const totalPrice = data.discountPrice * value;
 
   return (
-    <div className="border-b p-4">
-      <div className="w-full 800px:flex items-center">
-        <RxCross1 className="cursor-pointer 800px:mb-['unset'] 800px:ml-['unset'] mb-2 ml-2"
-        onClick={() => removeFromWishlistHandler(data)}
-        />
+    <div className="border-b pt-2 pl-2 pb-2 pr-1">
+      <div className="w-full flex ">
         <img
           src={`${data?.images[0]?.url}`}
           alt=""
           className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
         />
-
-        <div className="pl-[5px]">
+        <div className="pl-[5px] items-center">
           <h1>{data.name}</h1>
           <h4 className="font-[600] pt-3 800px:pt-[3px] text-[17px] text-[#d02222] font-Roboto">
             US${totalPrice}
           </h4>
         </div>
-        <div>
-          <BsCartPlus size={20} className="cursor-pointer" tile="Add to cart"
+        <div className="grid">
+        <button className="border border-red-500 p-1 rounded-sm justify-start">
+        <BsTrash size={20} className="cursor-pointer "
+        onClick={() => removeFromWishlistHandler(data)}
+        />
+        </button>
+        <button className="border border-red-500 p-1 rounded-sm">
+          <BsCartPlus size={20} className="cursor-pointer " tile="Add to cart"
            onClick={() => addToCartHandler(data)}
           />
+        </button>
         </div>
       </div>
     </div>

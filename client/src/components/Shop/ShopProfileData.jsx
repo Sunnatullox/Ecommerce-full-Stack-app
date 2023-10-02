@@ -61,11 +61,11 @@ const ShopProfileData = ({ isOwner }) => {
         <div>
           {isOwner && (
             <div>
-              <Link to="/dashboard">
+              <a href="/dashboard">
                 <div className={`${styles.button} !rounded-[4px] h-[42px]`}>
                   <span className="text-[#fff]">Go Dashboard</span>
                 </div>
-              </Link>
+              </a>
             </div>
           )}
         </div>

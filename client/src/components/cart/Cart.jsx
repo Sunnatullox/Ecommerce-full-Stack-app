@@ -49,7 +49,6 @@ const Cart = () => {
   const removeFromCartHandler = (data) => {
     const isItemInCheckout = checkOutCart.find((item) => item._id === data._id);
     if (isItemInCheckout) {
-      // Mahsulot "checkOutCart"dan o'chiriladi
       const updatedCheckout = checkOutCart.filter(
         (item) => item._id !== data._id
       );
@@ -74,23 +73,25 @@ const Cart = () => {
 
   const addToCheckoutHandler = (data) => {
     dispatch(addCheckoutList(data));
-    // window.location.reload()
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 300);
   };
 
   const subTotalPrice = checkOutCart?.reduce(
     (acc, item) => acc + item.qty * item.discountPrice,
     0
   );
-  const shipping = subTotalPrice > 100 ? subTotalPrice * 0.05 : 0;
+  const shipping = subTotalPrice < 500 ? subTotalPrice * 0.05 : 0;
 
   const totalPrice = (subTotalPrice + shipping).toFixed(2);
 
   return (
     <div className="bg-gray-100 rounded-md">
-      <div className="container mx-auto mt-10">
+      <div className="800px:container mx-auto mt-10">
         {cart.length > 0 ? (
-          <div className="flex shadow-md my-10">
-            <div className="w-3/4 bg-white px-10 py-10">
+          <div className="800px:flex shadow-md my-10">
+            <div className="w-full 800px:w-[70%] bg-white px-2 sm:px-10 py-10">
               <div className="flex justify-between pb-3">
                 <h1 className="font-semibold text-2xl">Shopping Cart</h1>
                 <h2 className="font-semibold text-2xl">{cart.length} Items</h2>
@@ -98,6 +99,12 @@ const Cart = () => {
               <div className="overflow-y-auto overflow-x-hidden h-[22rem]">
                 {/* Single Shop Cart  */}
                 {shopCart?.map((item, i) => {
+                  const checkOutShopIds = checkOutCart.map(
+                    (item) => item.shopId
+                  );
+                  const isShopIdsEqual = item.products.every((item) =>
+                    checkOutShopIds.includes(item.shopId)
+                  );
                   return (
                     <div key={i}>
                       <hr className="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700" />
@@ -108,17 +115,43 @@ const Cart = () => {
                         {item.name}
                       </Link>
                       {item.products?.map((prod, index) => (
-                        <SingleShopCart
-                          key={index}
-                          data={prod}
-                          quantityChangeHandler={quantityChangeHandler}
-                          removeFromCartHandler={removeFromCartHandler}
-                        />
+                        <>
+                          {checkOutCart.length === 0 ? (
+                            <SingleShopCart
+                              key={index}
+                              data={prod}
+                              quantityChangeHandler={quantityChangeHandler}
+                              removeFromCartHandler={removeFromCartHandler}
+                            />
+                          ) : (
+                            <>
+                              {checkOutCart[0]?.shopId === prod.shopId ? (
+                                <SingleShopCart
+                                  key={index}
+                                  data={prod}
+                                  check={false}
+                                  quantityChangeHandler={quantityChangeHandler}
+                                  removeFromCartHandler={removeFromCartHandler}
+                                />
+                              ) : (
+                                <SingleShopCart
+                                  check={true}
+                                  key={index}
+                                  data={prod}
+                                  quantityChangeHandler={quantityChangeHandler}
+                                  removeFromCartHandler={removeFromCartHandler}
+                                />
+                              )}
+                            </>
+                          )}
+                        </>
                       ))}
                       <div className="flex mb-4 justify-end">
                         <button
+                          type="button"
+                          disabled={checkOutShopIds.length > 0 && isShopIdsEqual === false ? true : false}
                           onClick={() => addToCheckoutHandler(item.products)}
-                          className="font-semibold rounded-[20px] text-[16px] h-[40px] tracking-[-.3px] leading-5 px-3 border-none cursor-pointer bg-[#e4e4e4]"
+                          className="focus:outline-none disabled:opacity-25 disabled:cursor-default font-semibold rounded-[20px] text-[16px] h-[40px] tracking-[-.3px] leading-5 px-3 border-none cursor-pointer bg-[#e4e4e4]"
                         >
                           Order everything in the store
                         </button>
@@ -141,7 +174,7 @@ const Cart = () => {
               </Link>
             </div>
 
-            <div id="summary" className="w-1/3 px-8">
+            <div id="summary" className="w-full 800px:w-[30%] px-2">
               <h3 className="font-semibold text-xl">
                 {checkOutCart.length > 0 ? (
                   <>Place an order</>
@@ -178,7 +211,7 @@ const Cart = () => {
                       </div>
                       <div className="flex font-semibold justify-between py-1 text-sm">
                         <span>Delivery</span>
-                        {subTotalPrice > 100 ? (
+                        {subTotalPrice < 500 ? (
                           <span>${shipping.toFixed(2)}</span>
                         ) : (
                           <span className="text-[#42c63b]">Free</span>
@@ -189,13 +222,11 @@ const Cart = () => {
                         onClick={() => navigate("/checkout")}
                         className="flex bg-indigo-500 font-semibold hover:bg-indigo-600 py-3 text-sm text-white  w-full"
                       >
-                        <span className=" pl-6 text-start">
-                        Checkout
-                        </span>
+                        <span className=" pl-6 text-start">Checkout</span>
                         <span className="ml-auto pr-1 gap-2">
-                        ${totalPrice}
+                          ${totalPrice}
                         </span>
-                         <AiOutlineRight  className="mr-5 self-center"/>
+                        <AiOutlineRight className="mr-5 self-center" />
                       </button>
                     </div>
                   </div>
@@ -219,6 +250,7 @@ const SingleShopCart = ({
   data,
   quantityChangeHandler,
   removeFromCartHandler,
+  check,
 }) => {
   const { cart, checkOutCart } = useSelector((state) => state.cart);
   const [value, setValue] = useState(data?.qty);
@@ -262,7 +294,7 @@ const SingleShopCart = ({
         <HiTrash />
       </button>
       <div className="flex items-center -mx-8 px-6 py-5">
-        <Link to={`/product/${data._id}`} className="flex w-2/5">
+        <Link to={`/product/${data._id}`} className="sm:flex w-2/5">
           <div className="mx-[15px] min-w-max">
             <img className="h-24" src={`${data?.images[0]?.url}`} alt="" />
           </div>
@@ -274,7 +306,7 @@ const SingleShopCart = ({
                 <>{data?.name}</>
               )}
             </span>
-            <span className="text-[#438eff] text-xs">
+            <span className=" hidden sm:block text-[#438eff] text-xs">
               {data?.description.length > 80 ? (
                 <>{data?.description.slice(0, 80)}...</>
               ) : (
@@ -326,6 +358,7 @@ const SingleShopCart = ({
           <input
             id="default-checkbox"
             type="checkbox"
+            disabled={check}
             value={data._id}
             defaultChecked={checkOutCart.find((item) => item._id === data._id)}
             onChange={(e) => addCheckoutSingle(e.target.checked, data._id)}

@@ -5,6 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
+import { GoogleLogin } from "react-google-login";
+import { useEffect } from "react";
+import { gapi } from "gapi-script";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,12 +30,47 @@ const Login = () => {
       .then((res) => {
         toast.success("Login Success!");
         navigate("/");
-        window.location.reload(true); 
+        window.location.reload(true);
       })
       .catch((err) => {
         toast.error(err.response.data.message);
       });
   };
+
+  const googleAuth = async (userData) => {
+    try {
+      if (userData) {
+        const { data } = await axios.post(
+          `${server}/user/auth/google`,
+          userData,
+          {
+            withCredentials: true,
+          }
+        );
+        if (data.success) {
+          toast.success("Login Success!");
+          navigate("/");
+          window.location.reload(true);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  const onFailer = (err) => {
+    console.log(err);
+  };
+
+  useEffect(() => {
+    function start() {
+      gapi.client.init({
+        clientId: process.env.REACT_APP_CLIENT_ID,
+        scope: "",
+      });
+    }
+    gapi.load("client:auth2", start);
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -127,31 +165,43 @@ const Login = () => {
                 Submit
               </button>
             </div>
-            <div className="text-sm text-gray-600 items-center flex justify-between">
-            <p className=" text-gray-800 cursor-pointer hover:text-blue-500 inline-flex items-center ml-4">
-              <Link to="/" className="flex">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Back
-              </Link>
-            </p>
-            <div className={`${styles.noramlFlex} ml-auto`}>
-              <h4>Not have any account?</h4>
-              <Link to="/sign-up" className="text-blue-600 pl-2">
-                Sign Up
-              </Link>
+            <div>
+              <GoogleLogin
+                className="w-full justify-center"
+                clientId={process.env.REACT_APP_CLIENT_ID}
+                buttonText="Continue with Google"
+                onSuccess={googleAuth}
+                onFailure={onFailer}
+                // cookiePolicy={"single_host_origin"}
+                isSignedIn={false}
+              />
             </div>
-          </div>
+            <div className="text-sm text-gray-600 items-center flex justify-between">
+              <p className=" text-gray-800 cursor-pointer hover:text-blue-500 inline-flex items-center ml-4">
+                <Link to="/" className="flex">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Back
+                </Link>
+              </p>
+
+              <div className={`${styles.noramlFlex} ml-auto`}>
+                <h4>Not have any account?</h4>
+                <Link to="/sign-up" className="text-blue-600 pl-2">
+                  Sign Up with Gmail
+                </Link>
+              </div>
+            </div>
           </form>
         </div>
       </div>

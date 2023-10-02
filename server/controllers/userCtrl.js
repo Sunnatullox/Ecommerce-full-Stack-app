@@ -5,8 +5,10 @@ const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/sendMail");
 const { sendToken, createActivationToken } = require("../utils/jwtToken");
 const bcrypt = require("bcrypt");
-const { uploadFileToFirebaseStorage, deleteFileFromFirebaseStorage } = require("../utils/firebase");
-
+const {
+  uploadFileToFirebaseStorage,
+  deleteFileFromFirebaseStorage,
+} = require("../utils/firebase");
 
 // register user controller
 exports.createUser = asyncHandler(async (req, res, next) => {
@@ -18,32 +20,64 @@ exports.createUser = asyncHandler(async (req, res, next) => {
       return next(new ErrorHandler("User already exists", 400));
     }
 
-      const user = {
-        name: name,
-        email: email,
-        password: password,
-        avatar:req.files.avatar ? await uploadFileToFirebaseStorage(req.files.avatar) : null
-      };
+    const user = {
+      name: name,
+      email: email,
+      password: password,
+      avatar: req.files.avatar
+        ? await uploadFileToFirebaseStorage(req.files.avatar)
+        : null,
+    };
 
-      const activationToken = await createActivationToken(user);
-      // console.log(activationToken);
-      const activationUrl = `${process.env.CLIENT_URL}/activation/${activationToken}`;
-      await sendMail({
-        email: user.email,
-        subject: "Activate your account",
-        message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
-      });
+    const activationToken = await createActivationToken(user);
+    // console.log(activationToken);
+    const activationUrl = `${process.env.CLIENT_URL}/activation/${activationToken}`;
+    await sendMail({
+      email: user.email,
+      subject: "Activate your account",
+      message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
+    });
 
-      res.status(201).json({
-        success: true,
-        message: `please check your email: ${user.email} to activate your account!`,
-      });
-      
+    res.status(201).json({
+      success: true,
+      message: `please check your email: ${user.email} to activate your account!`,
+    });
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
   }
 });
 
+// Create a new account for google authentication
+exports.googleAuth = asyncHandler(async (req, res, next) => {
+  try {
+    if (req.body.Ca !== req.body.googleId && !req.body.accessToken) {
+      return next(new ErrorHandler("Error creating a new account for google authentication", 400));
+    }
+    
+    const { profileObj } = req.body;
+    const findUser = await User.findOne({ email: profileObj.email });
+
+    if (findUser) {
+      if (!findUser.googleId) {
+        return next(new ErrorHandler("Sorry, you can't sign in with google. Please try again", 400));
+      }
+      sendToken(findUser, 201, res);
+    } else {
+      const newUser = {
+        name: profileObj.name,
+        email: profileObj.email,
+        googleId: profileObj.googleId,
+        avatar: { public_id: "", url: profileObj.imageUrl },
+      };
+      const user = await User.create(newUser);
+
+      sendToken(user, 201, res);
+    }
+  } catch (error) {
+    console.error(error);
+    return next(new ErrorHandler("Server error", 500));
+  }
+});
 
 // user forgot password send email tokken
 exports.forgotPasswordSendMailToken = asyncHandler(async (req, res, next) => {
@@ -111,19 +145,16 @@ exports.userResetPassword = asyncHandler(async (req, res, next) => {
     const { x_auth_token } = req.headers;
     const { password } = req.body;
     const hashPass = await bcrypt.hash(password, 10);
-    const token = await jwt.verify(
-      x_auth_token,
-      process.env.ACTIVATION_SECRET
-    );
+    const token = await jwt.verify(x_auth_token, process.env.ACTIVATION_SECRET);
     const user = await User.findOneAndUpdate(
       { email: token.user.email },
       {
-        $set: { password:hashPass },
+        $set: { password: hashPass },
       }
     );
     if (user) res.status(200).json({ success: true });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return next(new ErrorHandler("sorry server error please try again", 401));
   }
 });
@@ -266,14 +297,14 @@ exports.updateUserAvatar = asyncHandler(async (req, res, next) => {
 
     if (req.body.avatar !== "") {
       const avatar = await uploadFileToFirebaseStorage(req.files.avatar);
-        existsUser.avatar = avatar ;
+      existsUser.avatar = avatar;
 
-        await existsUser.save();
+      await existsUser.save();
 
-        res.status(200).json({
-          success: true,
-          user: existsUser,
-        });
+      res.status(200).json({
+        success: true,
+        user: existsUser,
+      });
     } else {
       res.status(200).json({
         success: true,
@@ -408,7 +439,7 @@ exports.deleteUserAdmin = asyncHandler(async (req, res, next) => {
     if (!user) {
       return next(new ErrorHandler("User is not available with this id", 400));
     }
-    await deleteFileFromFirebaseStorage(user.avatar.public_id)
+    await deleteFileFromFirebaseStorage(user.avatar.public_id);
     await User.findByIdAndDelete(req.params.id);
 
     res.status(201).json({

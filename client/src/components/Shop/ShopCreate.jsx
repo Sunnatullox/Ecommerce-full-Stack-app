@@ -6,8 +6,10 @@ import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
+import { IoIosArrowBack } from "react-icons/io";
 
 const ShopCreate = () => {
+  const navigate= useNavigate()
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState();
@@ -64,7 +66,10 @@ const ShopCreate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 justify-center py-12 sm:px-6 lg:px-8">
+      <button onClick={() =>navigate("/")} className="h-[40px] justify-center py-2 px-4 border border-blue-600 text-indigo-500 hover:text-white  text-sm font-medium rounded-md bg-outline hover:bg-blue-700">
+        <IoIosArrowBack className="text-xl" />
+      </button>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Register as a seller

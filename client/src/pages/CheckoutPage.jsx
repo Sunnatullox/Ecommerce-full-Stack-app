@@ -8,12 +8,10 @@ const CheckoutPage = () => {
   return (
     <div>
         <Header />
-        <br />
-        <br />
+       <div className='py-10'>  
         <CheckoutSteps active={1} />
         <Checkout />
-        <br />
-        <br />
+       </div>
         <Footer />
     </div>
   )

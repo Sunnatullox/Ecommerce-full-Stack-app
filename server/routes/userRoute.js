@@ -16,11 +16,13 @@ const {
   forgotPasswordSendMailToken,
   forgotPasswordCheckToken,
   userResetPassword,
+  googleAuth,
 } = require("../controllers/userCtrl");
 const { isAuthenticated, isAdmin } = require("../middleware/auth");
 const userRouter = Router();
 
 userRouter.post("/create-user", createUser);
+userRouter.post("/auth/google", googleAuth);
 userRouter.post("/activation", userActivation);
 userRouter.post("/login-user", loginUser);
 userRouter.post("/forgot-password", forgotPasswordSendMailToken);
